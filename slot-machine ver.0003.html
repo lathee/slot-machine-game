@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slot Machine Demo with Betting</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #2e3d4e;
+        }
+        #slot-machine {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .slot {
+            width: 80px;
+            height: 80px;
+            margin: 5px;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #333;
+            border-radius: 5px;
+            background-color: #f8f8f8;
+            animation: spin 0.5s ease-in-out infinite;
+        }
+        .slot-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(180deg); }
+            50% { transform: rotate(360deg); }
+            75% { transform: rotate(540deg); }
+            100% { transform: rotate(720deg); }
+        }
+        #spin-button, #bet-input, #deposit-input, #deposit-button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            margin-top: 10px;
+            cursor: pointer;
+            border: none;
+            background-color: #4caf50;
+            color: white;
+            border-radius: 5px;
+        }
+        #spin-button:hover, #bet-input:hover, #deposit-button:hover {
+            background-color: #45a049;
+        }
+        #result, #balance-display, #bet-section, #deposit-section {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Slot Machine with Betting Demo</h1>
+    <div id="slot-machine" class="slot-container">
+        <div class="slot" id="slot1">🍒</div>
+        <div class="slot" id="slot2">🍒</div>
+        <div class="slot" id="slot3">🍒</div>
+    </div>
+
+    <div id="balance-display">Balance: <span id="balance">100</span> coins</div>
+    <div id="bet-section">
+        Bet Amount: <input type="number" id="bet-input" value="10" min="1" max="100">
+    </div>
+
+    <div id="deposit-section">
+        Deposit Amount: <input type="number" id="deposit-input" value="10" min="1" max="100">
+        <button id="deposit-button">Deposit</button>
+    </div>
+    
+    <button id="spin-button">Spin</button>
+    <div id="result">Place your bet and press Spin to Play!</div>
+
+    <script>
+        // Масив символів
+        const symbols = ["🍒", "🍋", "🔔", "⭐", "🍉"];
+        let balance = 100; // Початковий баланс
+
+        // Функція для оновлення відображення балансу
+        function updateBalanceDisplay() {
+            document.getElementById("balance").textContent = balance;
+        }
+
+        // Функція для генерації випадкового символу
+        function getRandomSymbol() {
+            return symbols[Math.floor(Math.random() * symbols.length)];
+        }
+
+        // Функція для обертання слотів
+        function spinSlots() {
+            const bet = parseInt(document.getElementById("bet-input").value);
+
+            // Перевірка на коректність ставки
+            if (bet < 1 || bet > balance) {
+                document.getElementById("result").textContent = "Invalid bet amount!";
+                return;
+            }
+
+            // Зняття ставки з балансу
+            balance -= bet;
+            updateBalanceDisplay();
+
+            // Оновити результат обертання слотів
+            document.getElementById("slot1").textContent = "🍒";
+            document.getElementById("slot2").textContent = "🍒";
+            document.getElementById("slot3").textContent = "🍒";
+
+            // Скидання анімації
+            document.getElementById("slot1").style.animation = "none";
+            document.getElementById("slot2").style.animation = "none";
+            document.getElementById("slot3").style.animation = "none";
+
+            // Перезапуск анімації
+            setTimeout(() => {
+                document.getElementById("slot1").style.animation = "spin 0.5s ease-in-out";
+                document.getElementById("slot2").style.animation = "spin 0.5s ease-in-out";
+                document.getElementById("slot3").style.animation = "spin 0.5s ease-in-out";
+            }, 50); // Час для скидання і запуску анімації
+
+            // Симуляція затримки для відображення результатів
+            setTimeout(() => {
+                // Отримати випадкові символи для кожного слота
+                const slot1 = getRandomSymbol();
+                const slot2 = getRandomSymbol();
+                const slot3 = getRandomSymbol();
+
+                // Відобразити нові символи після анімації
+                document.getElementById("slot1").textContent = slot1;
+                document.getElementById("slot2").textContent = slot2;
+                document.getElementById("slot3").textContent = slot3;
+
+                // Перевірка на виграшну комбінацію
+                if (slot1 === slot2 && slot2 === slot3) {
+                    const winnings = bet * 10; // Виграш у десять разів більше ставки
+                    balance += winnings;
+                    document.getElementById("result").textContent = `Congratulations! You won ${winnings} coins!`;
+                } else {
+                    document.getElementById("result").textContent = "Try Again!";
+                }
+
+                updateBalanceDisplay();
+            }, 500); // Затримка анімації 500мс
+        }
+
+        // Функція для депонування віртуальних доларів
+        function depositMoney() {
+            const depositAmount = parseInt(document.getElementById("deposit-input").value);
+
+            if (depositAmount > 0) {
+                balance += depositAmount;
+                updateBalanceDisplay();
+                document.getElementById("result").textContent = `You deposited ${depositAmount} coins.`;
+            } else {
+                document.getElementById("result").textContent = "Please enter a valid deposit amount!";
+            }
+        }
+
+        // Додаємо обробник кліку для кнопки обертання
+        document.getElementById("spin-button").addEventListener("click", spinSlots);
+
+        // Додаємо обробник для кнопки депозиту
+        document.getElementById("deposit-button").addEventListener("click", depositMoney);
+
+        // Ініціалізувати відображення балансу
+        updateBalanceDisplay();
+    </script>
+</body>
+</html>
